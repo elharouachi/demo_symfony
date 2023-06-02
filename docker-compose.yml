@@ -1,0 +1,48 @@
+version: '3.2'
+
+services:
+    test-symfony:
+        image: php:7.4-fpm
+        networks:
+            test-symfony-backend:
+
+        volumes:
+            - ${PROJECT_ROOT_PATH}:/var/www:rw
+
+    test-symfony-nginx:
+        image: nginx:1.10.3
+        networks:
+            test-symfony-backend:
+                aliases:
+                    - test-symfony.dev.elharouachi.fr
+        environment:
+            - VHOSTS=test-symfony:symfony4:/var/www/public
+        depends_on:
+            - test-symfony
+        ports:
+            - "11280:80"
+            - "11243:443"
+        volumes:
+            - ${PROJECT_ROOT_PATH}:/var/www:rw
+
+    test-symfony-php-tools:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: php:7.4
+        networks:
+            test-symfony-backend:
+        volumes:
+            - "~/.ssh:/home/www-data/.ssh"
+            - ${PROJECT_ROOT_PATH}:/var/www
+            -   type: tmpfs
+                target: /tmp
+    git:
+        image: alpine/git
+        volumes:
+            - ./app:/var/www/html
+        command: [sh, -c, "while true; do sleep 1; done"]
+
+networks:
+    test-symfony-backend:
+        external: true
