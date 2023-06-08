@@ -32,6 +32,7 @@ class RssService
 
     public function getRssLinks(): array
     {
+        $i = 0;
         $links = [];
         $rssContent = $this->getRssContent();
         $rssXmlContent = simplexml_load_string($rssContent, 'SimpleXMLElement', LIBXML_NOCDATA);
@@ -42,10 +43,11 @@ class RssService
             $links[]= (string)$item->link[0];
 
             foreach (self::IMAGE_EXTENSIONS as $extension) {
-                if(!!substr_count(strtoupper((string)$item->children("content", true)), $extension) < 0)  {
+                if(!!substr_count(strtoupper((string)$item[$i]->children("content", true)), $extension) < 0)  {
                     $links[] = "";
                 }
             }
+            $i++;
         }
 
         return $links;
